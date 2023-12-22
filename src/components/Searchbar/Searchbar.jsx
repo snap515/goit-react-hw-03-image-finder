@@ -1,18 +1,19 @@
-export const Searchbar = ({onSubmit, onInput}) => {
+import css from './Searchbar.module.css'
+
+export const Searchbar = ({ onSubmit, onInput }) => {
   return (
-    <header className="searchbar">
-      <form className="form" onSubmit={onSubmit}>
-        <button type="submit" className="button" >
-          <span className="button-label">Search</span>
+    <header className={css.Searchbar}>
+      <form className={css.SearchForm} onSubmit={onSubmit}>
+        <button type="submit" className={css.SearchForm_button} >
+          <span className={css.SearchForm_buttonLabel}>Search</span>
         </button>
 
         <input
-          className="input"
+          className={css.SearchForm_input}
           type="text"
           autoComplete="off"
           autoFocus
           placeholder="Search images and photos"
-          onInput={onInput}
           name='searchText'
         />
       </form>
