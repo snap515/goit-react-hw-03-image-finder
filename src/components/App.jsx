@@ -12,32 +12,9 @@ export class App extends Component{
     status: STATUSES.idle,
     error: null,
     page: 1,
-    modalData: null,
-    isModalOpen: false
+    isModalOpen: false,
+    totalHits: null
   }
-
-  handleModal = (idToFind) => {
-    // console.log('imgId', idToFind)
-    const imgData = this.state.data.find(img => img.id === idToFind)
-    console.log(imgData.largeImageURL)
-    this.setState({ isModalOpen: true, modalData: imgData.largeImageURL})
-    console.log(this.state.modalData)
-  }
-
-  handleCloseModal = (e) => {
-    if (e.target === e.currentTarget) {
-      this.setState({isModalOpen: false})
-    }
-  }
-
-  handleModalOnEscClose = (e) => {
-    console.log('ESC')
-    if (e.code === 'Escape') {
-      this.setState({isModalOpen: false})
-    }
-  }
-
-
 
   onSubmit = e => {
     e.preventDefault();
@@ -46,14 +23,17 @@ export class App extends Component{
     this.setState({
       searchText: searchText,
       data: null,
-      page: 1})
+      page: 1,
+    })
   }
 
-  getImages = async (seatchText, page) => {
+  getImages = async (searchText, page) => {
     try {
       this.setState({ status: STATUSES.pending });
-      const data = await fetchImages(seatchText, page);
-      this.setState({status: STATUSES.success, data:data.hits})
+      const data = await fetchImages(searchText, page);
+      this.setState({ status: STATUSES.success, data: data.hits })
+      console.log(data)
+      return data;
     }
     catch (error){
       this.setState({
@@ -63,26 +43,28 @@ export class App extends Component{
     }
   }
 
+  onLoadMore = () => {
+    const nextPage = this.state.page + 1;
+    this.setState({ page: nextPage })
+  }
 
   componentDidUpdate = (prevProps, prevState) => {
-      if (this.state.page !== prevState.page || this.state.searchText !== prevState.searchText) {
-        this.getImages(this.state.searchText, this.state.page)
+    if (this.state.page !== prevState.page ||
+      this.state.searchText !== prevState.searchText) {
+        fetchImages(this.state.searchText, this.state.page).then(fetchData => {
+          this.setState(prevState => ({
+            data: [...prevState.data, ...fetchData.hits]
+          }))
+        })
     }
-  }
-  
-  onInput = (e) => {
-    this.setState({
-      [e.target.name]: e.target.value,
-
-    })
   }
 
   render() {
     return (
       <div>
         <Searchbar onSubmit={this.onSubmit}/>
-        <ImageGallery data={this.state.data} handleCloseModal={ this.handleCloseModal} handleModal={this.handleModal} modalData={this.state.modalData} isModalOpen={this.state.isModalOpen}></ImageGallery>
-        <Button></Button>
+        <ImageGallery data={this.state.data}></ImageGallery>
+        <Button onLoadMore={this.onLoadMore}></Button>
       </div>
     );
   }

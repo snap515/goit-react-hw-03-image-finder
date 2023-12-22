@@ -3,16 +3,32 @@ import css from './Modal.module.css'
 
 export class Modal extends Component {
 
+  
+  handleCloseModal = (e) => {
+    if (e.target === e.currentTarget) {
+      this.props.closeModal();
+    }
+  }
 
+  handleModalOnEscClose = (e) => {
+    if (e.code === 'Escape') {
+      this.props.closeModal();
+    }
+  }
+
+  componentDidMount() {
+    window.addEventListener('keydown', this.handleModalOnEscClose)
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this.handleModalOnEscClose)
+  }
   
   render() {
-    const { modalData } = this.props;
-    const { handleCloseModal } = this.props;
-    const { handleModalOnEscClose } = this.props;
   return (
-    <div className={css.Overlay} onClick={handleCloseModal}>
+    <div className={css.Overlay} onClick={this.handleCloseModal}>
       <div className={css.Modal}>
-        <img src={modalData} alt="" />
+        <img src={this.props.modalData} alt="" />
       </div>
     </div>
   )
