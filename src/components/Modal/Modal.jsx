@@ -17,10 +17,12 @@ export class Modal extends Component {
   }
 
   componentDidMount() {
+    document.body.style.overflow = 'hidden';
     window.addEventListener('keydown', this.handleModalOnEscClose)
   }
 
   componentWillUnmount() {
+    document.body.style.overflow = 'auto';
     window.removeEventListener('keydown', this.handleModalOnEscClose)
   }
   

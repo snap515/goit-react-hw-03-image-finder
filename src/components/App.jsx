@@ -4,6 +4,7 @@ import { ImageGallery } from "./ImageGallery/ImageGallery";
 import { Button } from "./Button/Button";
 import { fetchImages } from "services/photoService";
 import { STATUSES } from "utils/constants";
+import { Loader } from "./Loader/Loader";
 
 export class App extends Component{
   state = {
@@ -13,26 +14,27 @@ export class App extends Component{
     error: null,
     page: 1,
     isModalOpen: false,
-    totalHits: null
+    loadMore: false
   }
 
   onSubmit = e => {
     e.preventDefault();
     const searchText = e.currentTarget.elements.searchText.value;
 
-    this.setState({
-      searchText: searchText,
-      data: null,
-      page: 1,
-    })
+    if (this.state.searchText !== searchText) {
+      this.setState({
+        searchText: searchText,
+        data: null,
+        page: 1,
+      })
+    }
   }
 
   getImages = async (searchText, page) => {
     try {
       this.setState({ status: STATUSES.pending });
       const data = await fetchImages(searchText, page);
-      this.setState({ status: STATUSES.success, data: data.hits })
-      console.log(data)
+      this.setState({ status: STATUSES.success, loadMore: this.state.page < Math.ceil(data.totalHits / 12 )})
       return data;
     }
     catch (error){
@@ -51,10 +53,12 @@ export class App extends Component{
   componentDidUpdate = (prevProps, prevState) => {
     if (this.state.page !== prevState.page ||
       this.state.searchText !== prevState.searchText) {
-        fetchImages(this.state.searchText, this.state.page).then(fetchData => {
-          this.setState(prevState => ({
-            data: [...prevState.data, ...fetchData.hits]
-          }))
+        this.getImages(this.state.searchText, this.state.page).then(fetchData => {
+          this.setState(prevState =>
+          (
+            prevState.data ? {
+            data: [...prevState.data, ...fetchData.hits],
+            } : { data: fetchData.hits }))
         })
     }
   }
@@ -64,7 +68,8 @@ export class App extends Component{
       <div>
         <Searchbar onSubmit={this.onSubmit}/>
         <ImageGallery data={this.state.data}></ImageGallery>
-        <Button onLoadMore={this.onLoadMore}></Button>
+        {this.state.data && this.state.loadMore && <Button onLoadMore={this.onLoadMore}></Button>}
+        {this.state.status === STATUSES.pending && <Loader></Loader>}
       </div>
     );
   }

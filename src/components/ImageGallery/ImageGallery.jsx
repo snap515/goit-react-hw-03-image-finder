@@ -12,9 +12,7 @@ export class ImageGallery extends Component {
   handleModal = (idToFind) => {
     const data  = this.props.data;
     const modalData = data.find(img => img.id === idToFind)
-    console.log(modalData.largeImageURL)
     this.setState({ isModalOpen: true, modalData: modalData.largeImageURL})
-    console.log(this.state.modalData)
   }
 
   closeModal = () => {
